@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Image Gallery</title>
+    <!--
+    <style>
+        body {
+            background-color: #1f1f1f;
+            color: #ffffff;
+        }
+        .image-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            grid-gap: 10px;
+        }
+        .image-grid img {
+            width: 100%;
+            height: auto;
+        }
+    </style>
+    -->
+    <style>
+        body {
+            background-color: #1f1f1f;
+            color: #ffffff;
+        }
+    
+        .image-grid {
+            display: grid;
+            grid-gap: 10px;
+        }
+    
+        .image-grid img {
+            width: 100%;
+            height: auto;
+        }
+    
+        @media screen and (min-width: 768px) {
+            /* Medium screens and larger */
+            .image-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    
+        @media screen and (min-width: 992px) {
+            /* Large screens and larger */
+            .image-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+    
+        @media screen and (min-width: 1920px) {
+            /* Extra-large screens and larger */
+            .image-grid {
+                grid-template-columns: repeat(6, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <a href="/upload">Upload</a>
+    <div class="image-grid">
+        {% for image in images %}
+            <!--<a href="/video/{{ image.split('.')[0] }}"><img src="{{ url_for('static', filename='images/' + image) }}" width="200" height="200"></a>-->
+            <!--<a href="/video/{{ image.split('.')[0] }}"><img src="{{ url_for('base_images', id=image) }}" width="200" height="200"></a>-->
+            <a href="/streams/{{ image.split('.')[0] }}"><img src="{{ url_for('base_images', id=image) }}" width="200" height="200"></a>
+        {% endfor %}
+    </div>
+</body>
+</html>

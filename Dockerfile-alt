@@ -1,0 +1,12 @@
+FROM oneshot-faceswap-web:latest
+
+ADD ./app.py /app
+ADD ./face-extraction.py /app
+ADD ./interrogate.py /app
+ADD ./templates/*.html /app/templates/
+
+RUN python3 -c "from interrogate import InterrogateModels;interrogator = InterrogateModels('interrogate');interrogator.load();interrogator.categories()"
+
+EXPOSE 5000
+
+CMD ["python3", "app.py"]

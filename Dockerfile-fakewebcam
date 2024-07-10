@@ -1,0 +1,19 @@
+FROM oneshot-faceswap-web:latest
+
+# Install dependencies
+RUN apt-get update && apt-get install -y \
+    libopencv-dev \
+    python3-opencv \
+    v4l-utils 
+
+RUN pip install pyfakewebcam
+RUN git clone https://github.com/jremmons/pyfakewebcam.git
+RUN cd pyfakewebcam && python3 setup.py install
+
+ADD ./virtual-webcam.py ./
+
+EXPOSE 5000
+
+#CMD ["bash"]
+
+CMD ["python3", "virtual-webcam.py"]

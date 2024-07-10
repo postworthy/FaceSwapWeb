@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Stream</title>
+    <style>
+        html {
+          height: 100%;
+        }
+        body {
+            height: 100%;
+            background-color: #1f1f1f;
+            color: #ffffff;
+        }
+
+        .video-grid {
+            height: 100%;
+            display: grid;
+            grid-template-columns: repeat(1, 1fr);
+            grid-gap: 10px;
+        }
+
+        .video-grid img {
+            -width: 100%;
+            height: 100%;
+            object-fit: contain;
+            margin: auto;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="video-grid">
+        <a href="{{ url_for('stream_video_data', id_swap=id_swap, id_target=id_target) }}?mode=gif&swaps={{swaps}}&upsample={{upsample}}">
+            <img src="{{ url_for('stream_video_data', id_swap=id_swap, id_target=id_target) }}?swaps={{swaps}}&upsample={{upsample}}"type="multipart/x-mixed-replace">
+        </a>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.4.1/socket.io.js"></script>
+    <script>
+        const socket = io();
+
+        socket.on('message', function(message) {
+            console.log('Received message: ' + message);
+            // Process the received message from the server
+        });
+
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'ArrowLeft') {
+                socket.emit('message', 'back');
+            } else if (event.key === 'ArrowRight') {
+                socket.emit('message', 'forward');
+            } else if (event.code === 'Space') {
+                socket.emit('message', 'pause');
+            } else if (event.key === '+' || event.key === '=') {
+                socket.emit('message', 'faster');
+            } else if (event.key === '-' || event.key === '_') {
+                socket.emit('message', 'slower');
+            } else if (event.key === 'c' || event.key === 'C') {
+                socket.emit('message', 'change-face');
+            } else if (event.key === 'v' || event.key === 'V') {
+                socket.emit('message', 'change-video');
+            }
+        });
+    </script>
+</body>
+
+</html>
