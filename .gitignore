@@ -162,7 +162,7 @@ output/
 repos/
 Research/
 static/
-
+*.pth
 
 # PyCharm
 #  JetBrains specific template is maintained in a separate JetBrains.gitignore that can
