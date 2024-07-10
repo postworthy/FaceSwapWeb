@@ -155,6 +155,7 @@ dmypy.json
 cython_debug/
 
 #Custom Ignores
+docker_models_cache
 docker_models_cache/
 faces/
 jiras/
