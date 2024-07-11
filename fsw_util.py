@@ -21,6 +21,7 @@ import queue
 import threading
 import ctypes
 from ghost import ghost_process_image, ghost_batch_process_image
+from util import get_face_analyser, get_face_swapper
 
 THREAD_LOCK_FACEANALYSER = threading.Lock()
 THREAD_LOCK_FACESWAPPER = threading.Lock()
@@ -34,33 +35,33 @@ FACE_ANALYSER = None
 
 ACTIONS = deque([])
 
-PROVIDERS = onnxruntime.get_available_providers()
+#PROVIDERS = onnxruntime.get_available_providers()
 
-if 'TensorrtExecutionProvider' in PROVIDERS:
-    PROVIDERS.remove('TensorrtExecutionProvider')
+#if 'TensorrtExecutionProvider' in PROVIDERS:
+#    PROVIDERS.remove('TensorrtExecutionProvider')
 
 #gpus = tensorflow.config.experimental.list_physical_devices('GPU')
 #for gpu in gpus:
 #    tensorflow.config.experimental.set_memory_growth(gpu, True)
 
-def get_face_analyser():
-    global FACE_ANALYSER
-    if not FACE_ANALYSER:
-        with THREAD_LOCK_FACEANALYSER:
-            if not FACE_ANALYSER:
-                FACE_ANALYSER = insightface.app.FaceAnalysis(name='buffalo_l', providers=PROVIDERS)
-                FACE_ANALYSER.prepare(ctx_id=0, det_size=(640, 640))
-    return FACE_ANALYSER
+#def get_face_analyser():
+#    global FACE_ANALYSER
+#    if not FACE_ANALYSER:
+#        with THREAD_LOCK_FACEANALYSER:
+#            if not FACE_ANALYSER:
+#                FACE_ANALYSER = insightface.app.FaceAnalysis(name='buffalo_l', providers=PROVIDERS)
+#                FACE_ANALYSER.prepare(ctx_id=0, det_size=(640, 640))
+#    return FACE_ANALYSER
 
-def get_face_swapper():
-    global FACE_SWAPPER
-    if not FACE_SWAPPER:
-        with THREAD_LOCK_FACESWAPPER:
-            if not FACE_SWAPPER:
-                model_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'inswapper_128.onnx')
-                print(model_path)
-                FACE_SWAPPER = insightface.model_zoo.get_model(model_path, providers=PROVIDERS)
-    return FACE_SWAPPER
+#def get_face_swapper():
+#    global FACE_SWAPPER
+#    if not FACE_SWAPPER:
+#        with THREAD_LOCK_FACESWAPPER:
+#            if not FACE_SWAPPER:
+#                model_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'inswapper_128.onnx')
+#                print(model_path)
+#                FACE_SWAPPER = insightface.model_zoo.get_model(model_path, providers=PROVIDERS)
+#    return FACE_SWAPPER
 
 def get_face_single(img_data):
     face = get_face_analyser().get(img_data)
