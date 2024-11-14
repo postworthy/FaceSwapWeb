@@ -1,7 +1,8 @@
 #!/bin/bash
 cd "$(dirname "$0")"
 
-#sudo modprobe v4l2loopback
+#sudo modprobe v4l2loopback devices=4
+#sudo chown landon /dev/video*
 
 docker buildx build -f Dockerfile-fakewebcam . -t oneshot-faceswap-cam:latest
 docker run -it --shm-size=2gb --gpus all \
