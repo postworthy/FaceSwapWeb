@@ -183,7 +183,7 @@ processing_threads = []
 processing_threads_lock = threading.Lock()
 single_lock = threading.Lock()
 
-def batch_processor(batch_frames, batch_frames_lock, frame_queue, source_images, stop_flag, batch_size=8):
+def batch_processor(batch_frames, batch_frames_lock, frame_queue, source_images, stop_flag, batch_size=8, use_ghost=True):
     from util import batch_process_image
     try:
         while True:
@@ -205,8 +205,10 @@ def batch_processor(batch_frames, batch_frames_lock, frame_queue, source_images,
                 # Split frames_to_process into chunks of size batch_size and process each chunk
                 for i in range(0, len(frames_to_process), batch_size):
                     chunk = frames_to_process[i:i + batch_size]
-                    #processed_frames = ghost_batch_process_image(chunk, source_image)
-                    processed_frames = batch_process_image(chunk, source_image, False)
+                    if use_ghost == True:
+                        processed_frames = ghost_batch_process_image(chunk, source_image)
+                    else:
+                        processed_frames = batch_process_image(chunk, source_image, False)
                     for processed_frame in processed_frames:
                         frame_queue.put(processed_frame[:, :, ::-1])
             else:
@@ -221,7 +223,7 @@ def batch_processor(batch_frames, batch_frames_lock, frame_queue, source_images,
         print("Thread Exit")
         pass
 
-def process_frames_v2(id_swap, id_target, mode, skip, swaps=[], min_faces=1, upsample_image=False, stop_processing_event=None):  
+def process_frames_v2(id_swap, id_target, mode, skip, swaps=[], min_faces=1, upsample_image=False, stop_processing_event=None, use_ghost=True):  
     global ACTIONS
     global processing_threads    
 
@@ -306,7 +308,7 @@ def process_frames_v2(id_swap, id_target, mode, skip, swaps=[], min_faces=1, ups
         source_face = get_face_single(source_image)
         print(f'Face Dimensions: {(source_face.bbox[2] - source_face.bbox[0])}x{(source_face.bbox[3] - source_face.bbox[1])}')
         
-        processing_thread = threading.Thread(target=batch_processor, args=(batch_frames, batch_frames_lock, frame_queue, source_images, stop_flag, batch_size,))
+        processing_thread = threading.Thread(target=batch_processor, args=(batch_frames, batch_frames_lock, frame_queue, source_images, stop_flag, batch_size,use_ghost))
         processing_threads.append((processing_thread, stop_flag))
         processing_thread.start()
 
@@ -480,7 +482,7 @@ def process_frames_v2(id_swap, id_target, mode, skip, swaps=[], min_faces=1, ups
         if mode.startswith('single'):
             single_lock.release()
 
-def process_frames(id_swap, id_target, mode, skip, swaps=[], min_faces=1, upsample_image=False, stop_processing_event=None):  
+def process_frames(id_swap, id_target, mode, skip, swaps=[], min_faces=1, upsample_image=False, stop_processing_event=None, use_ghost=False):  
     global actions  
     
     skip_rate=skip
