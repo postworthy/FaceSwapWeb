@@ -11,8 +11,17 @@ from collections import deque
 import py7zr
 import secrets
 import string
-from fsw_util import push_action, export_as_gif, export_as_jpg, get_face_single, get_face_swapper, process_frames, get_fps, get_face_analyser
+from fsw_util import push_action, export_as_gif, export_as_jpg, get_face_single, get_face_swapper, process_frames, process_frames_v2, get_fps, get_face_analyser
+import numpy as np
+
 app = Flask(__name__)
+
+use_ghost = True
+
+if use_ghost:
+    _process_frames = process_frames_v2
+else:
+    _process_frames = process_frames
 
 THREAD_LOCK_UPLOAD = threading.Lock()
 
@@ -64,8 +73,9 @@ def index():
 @app.route('/base/images/<id>')
 def base_images(id):
     image_dir = './static/images/'
-    #source_face = get_face_single(cv2.imread(image_dir + id))
-    source_face = cv2.imread(image_dir + id)
+    source_face = get_face_single(cv2.imread(image_dir + id)[:,:,::-1])
+    #source_face = cv2.imread(image_dir + id)
+    #source_face = Image.open(image_dir + id)
     #print(source_face.gender)
     
     #frame = cv2.imread('./static/base.jpg')
@@ -75,7 +85,8 @@ def base_images(id):
     #jpg_img = cv2.cvtColor(result, cv2.COLOR_RGBA2BGR)
     #image = Image.fromarray(jpg_img)
     
-    image = Image.fromarray(source_face)
+    #image = Image.fromarray(source_face)
+    image = source_face
     image_stream = BytesIO()
     image.save(image_stream, format='PNG')
     image_stream.seek(0)
@@ -122,7 +133,7 @@ def stream_video_data(id_swap, id_target):
     min_faces = request.args.get("min", default=1, type=int)
     upsample = request.args.get("upsample", default=0, type=int)
     if mode.startswith('gif'):
-        frames = [frame for frame in process_frames(id_swap, id_target, mode, skip, swaps, min_faces, upsample > 0)]
+        frames = [frame for frame in _process_frames(id_swap, id_target, mode, skip, swaps, min_faces, upsample > 0, use_ghost=use_ghost)]
         gif_output = export_as_gif(frames, get_fps(id_target))
         return send_file(gif_output, mimetype='image/gif', as_attachment=True, download_name='output.gif')
     if mode.startswith('single'):
@@ -134,7 +145,7 @@ def stream_video_data(id_swap, id_target):
                 file_path = 'cache/'
                 try:
                     with open(existing_file_path + existing_file_name, 'xb') as file:
-                        file.write(export_as_jpg([frame for frame in process_frames(id_swap, id_target, mode, skip, swaps, min_faces, upsample > 0)]))
+                        file.write(export_as_jpg([frame for frame in _process_frames(id_swap, id_target, mode, skip, swaps, min_faces, upsample > 0, use_ghost=use_ghost)]))
                 except Exception as e: 
                     print(e)
                     if os.path.exists(existing_file_path + existing_file_name):
@@ -165,7 +176,7 @@ def stream_video_data(id_swap, id_target):
             stop_processing_event.clear()
             def generate():
                 try:
-                    for frame in process_frames(id_swap, id_target, mode, skip, swaps, min_faces, upsample > 0, stop_processing_event) :
+                    for frame in _process_frames(id_swap, id_target, mode, skip, swaps, min_faces, upsample > 0, stop_processing_event, use_ghost=use_ghost) :
                         yield frame
                 except GeneratorExit:  # Catch the GeneratorExit when client disconnects
                     stop_processing_event.set()
