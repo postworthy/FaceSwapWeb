@@ -1,11 +1,10 @@
 #Requires FaceSwap Pipeline to be build local
 FROM faceswap-pipeline:latest
+
 #WORKDIR /app
 #ENV DEBIAN_FRONTEND=noninteractive
-RUN apt-get update 
-##RUN apt-get install -y python3 pip python3-tk
-#RUN apt-get install -y wget unzip git
-RUN apt-get install -y xz-utils ffmpeg
+RUN apt-get update && apt-get install -y xz-utils ffmpeg && rm -rf /var/lib/apt/lists/*
+#libcublas-11-8 libcublas-dev-11-8
 #RUN pip3 install --upgrade torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118 && pip install onnxruntime-gpu
 RUN pip3 install ftfy regex tqdm
 RUN pip3 install git+https://github.com/openai/CLIP.git
@@ -59,7 +58,7 @@ RUN ln -s /root/.insightface/models/inswapper_128.onnx /app/inswapper_128.onnx
 #RUN cd fuse-archive && make && make install
 
 #PATCH https://github.com/XPixelGroup/BasicSR/pull/624/files
-RUN sed -i 's/from torchvision.transforms.functional_tensor import rgb_to_grayscale/from torchvision.transforms.functional import rgb_to_grayscale/' /usr/local/lib/python3.8/dist-packages/basicsr/data/degradations.py
+#RUN sed -i 's/from torchvision.transforms.functional_tensor import rgb_to_grayscale/from torchvision.transforms.functional import rgb_to_grayscale/' /usr/local/lib/python3.10/dist-packages/basicsr/data/degradations.py
 #END PATCH
 
 ADD ./templates/*.html /app/templates/
@@ -69,9 +68,14 @@ ADD ./fsw_util.py /app
 ADD ./face-extraction.py /app
 
 RUN pip3 install python-telegram-bot
+RUN pip3 install gradio
 
 ADD ./bot.py /app
+ADD ./faceswap_mp4.py /app
+ADD ./gradio_app.py /app
 
 EXPOSE 5000
 
-CMD ["python3", "app2.py"]
+#CMD ["python3", "app2.py"]
+#CMD ["python3", "faceswap_mp4.py"]
+CMD ["python3", "gradio_app.py"]
